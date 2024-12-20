@@ -1,0 +1,62 @@
+POST http://127.0.0.1:9001/api/v1/auth/signup HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "123qqwwweeqqqwtqesq",
+    "password": "qwseq12312312",
+    "email": "12ew1wwq1w23qwe@qweqwe.com"
+}
+
+###
+POST http://localhost:9001/api/v1/auth/signin HTTP/1.1
+Content-Type: application/json
+
+{
+    "password": "qwseq12312312",
+    "email": "12ew1wwq1w23qwe@qweqwe.com"
+}
+###
+GET http://localhost:9001/api/v1/profile HTTP/1.1
+Content-Type: application/json
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+
+{}
+
+###
+POST http://localhost:9001/api/v1/conversations HTTP/1.1
+Content-Type: application/json
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+
+{
+    "name": "Group chat 321",
+    "is_group": true,
+    "participant_ids": [1]
+}
+
+###
+POST http://localhost:9001/api/v1/conversations/1/messages HTTP/1.1
+Content-Type: application/json
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+
+{
+    "content": "Hello, everyone1!"
+}
+
+###
+POST http://localhost:9001/api/v1/conversations/1/messages/1 HTTP/1.1
+Content-Type: application/json
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+
+{
+    "content": "Hello, everyone updated!"
+}
+###
+POST http://localhost:9001/api/v1/conversations/1/show-user-typing HTTP/1.1
+Content-Type: application/json
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+
+
+###
+GET http://localhost:9001/api/v1/conversations/1/messages?limit=1&lastID=2 HTTP/1.1
+Content-Type: application/json
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
