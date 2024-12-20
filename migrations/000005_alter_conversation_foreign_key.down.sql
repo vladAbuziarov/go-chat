@@ -1,0 +1,2 @@
+ALTER TABLE conversation_participants
+DROP CONSTRAINT IF EXISTS conversation_participants_conversation_id_fkey;

@@ -1,0 +1,418 @@
+basePath: /api/v1
+definitions:
+  auth.LoginRequestPayload:
+    properties:
+      email:
+        description: |-
+          Email address of the user
+          required: true
+        type: string
+      password:
+        description: |-
+          Password of the user
+          required: true
+        maxLength: 20
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResp200Body:
+    properties:
+      token:
+        description: |-
+          JWT token for authenticated requests
+          required: true
+        type: string
+    type: object
+  auth.ProfileResp200Body:
+    properties:
+      profile:
+        allOf:
+        - $ref: '#/definitions/users.User'
+        description: |-
+          The user's profile information
+          required: true
+    type: object
+  auth.RegisterRequestPayload:
+    properties:
+      email:
+        description: |-
+          Email address of the user
+          required: true
+        type: string
+      name:
+        description: |-
+          Username of the user
+          required: true
+        maxLength: 20
+        minLength: 3
+        type: string
+      password:
+        description: |-
+          Password of the user
+          required: true
+        maxLength: 20
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  auth.RegisterResponse200Payload:
+    properties:
+      user:
+        allOf:
+        - $ref: '#/definitions/users.User'
+        description: |-
+          The registered user
+          required: true
+    type: object
+  chat.Conversation:
+    description: Represents a chat conversation between users.
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_group:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  chat.Message:
+    properties:
+      content:
+        type: string
+      conversation_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      sender_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  conversation.CreateConversationRequestPayload:
+    properties:
+      is_group:
+        description: |-
+          Indicates if the conversation is a group chat
+          required: true
+        type: boolean
+      name:
+        description: |-
+          Name of the conversation
+          required: true
+        maxLength: 50
+        minLength: 3
+        type: string
+      participant_ids:
+        description: |-
+          IDs of participants to be added to the conversation
+          required: true
+        items:
+          type: integer
+        type: array
+    required:
+    - is_group
+    - name
+    - participant_ids
+    type: object
+  conversation.CreateConversationResponse200Payload:
+    properties:
+      conversation:
+        $ref: '#/definitions/chat.Conversation'
+    type: object
+  conversation.ShowUserTypingResponse200Payload:
+    properties:
+      success:
+        description: |-
+          Indicates whether the operation was successful.
+          required: true
+        type: boolean
+    type: object
+  message.GetMessagesResponse200Payload:
+    properties:
+      messages:
+        description: |-
+          List of messages
+          required: true
+        items:
+          $ref: '#/definitions/chat.Message'
+        type: array
+    type: object
+  message.MessageUpdateRequestPayload:
+    properties:
+      content:
+        description: |-
+          Updated content of the message
+          required: true
+        maxLength: 250
+        minLength: 3
+        type: string
+    required:
+    - content
+    type: object
+  message.MessageUpdateResponse200Payload:
+    properties:
+      message:
+        allOf:
+        - $ref: '#/definitions/chat.Message'
+        description: |-
+          The updated message
+          required: true
+    type: object
+  message.SendMessageRequestPayload:
+    properties:
+      content:
+        description: |-
+          Content of the message
+          required: true
+        maxLength: 250
+        minLength: 3
+        type: string
+    required:
+    - content
+    type: object
+  message.SendMessageResponse200Payload:
+    properties:
+      message:
+        allOf:
+        - $ref: '#/definitions/chat.Message'
+        description: |-
+          SendMessageResponse200Payload represents a successful response containing the sent message.
+          swagger:model
+    type: object
+  users.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      user_name:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: API documentation for the Chat Application.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Chat Application API
+  version: "1.0"
+paths:
+  /api/v1/auth/profile:
+    get:
+      description: Retrieves the authenticated user's profile.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.ProfileResp200Body'
+      security:
+      - UserTokenAuth: []
+      summary: Get user profile
+      tags:
+      - authentication
+  /api/v1/auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a JWT token.
+      parameters:
+      - description: Login Request Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResp200Body'
+      summary: User login
+      tags:
+      - authentication
+  /api/v1/auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with the provided details.
+      parameters:
+      - description: Register Request Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse200Payload'
+      summary: Register a new user
+      tags:
+      - authentication
+  /api/v1/conversations/{conversationId}/messages:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves messages from a specified conversation with optional
+        pagination parameters.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationId
+        required: true
+        type: integer
+      - default: 10
+        description: Number of messages to retrieve
+        in: query
+        name: limit
+        type: integer
+      - description: ID of the last message received
+        in: query
+        name: lastID
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/message.GetMessagesResponse200Payload'
+      security:
+      - UserTokenAuth: []
+      summary: Get messages from a conversation
+      tags:
+      - messages
+    post:
+      consumes:
+      - application/json
+      description: Sends a new message within a specified conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationId
+        required: true
+        type: integer
+      - description: Send Message Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/message.SendMessageRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/message.SendMessageResponse200Payload'
+      security:
+      - UserTokenAuth: []
+      summary: Send a new message
+      tags:
+      - messages
+  /api/v1/conversations/{conversationId}/messages/{messageId}:
+    post:
+      consumes:
+      - application/json
+      description: Updates the content of a specified message within a conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationId
+        required: true
+        type: integer
+      - description: Message ID
+        in: path
+        name: messageId
+        required: true
+        type: integer
+      - description: Update Message Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageUpdateRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/message.MessageUpdateResponse200Payload'
+      security:
+      - UserTokenAuth: []
+      summary: Update a message
+      tags:
+      - messages
+  /api/v1/conversations/{conversationId}/show-user-typing:
+    post:
+      description: Records that a user is typing in a conversation.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/conversation.ShowUserTypingResponse200Payload'
+      security:
+      - UserTokenAuth: []
+      summary: Show user typing status
+      tags:
+      - conversations
+  /conversations:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new conversation with specified participants.
+      parameters:
+      - description: Create Conversation Request
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/conversation.CreateConversationRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/conversation.CreateConversationResponse200Payload'
+      security:
+      - UserTokenAuth: []
+      summary: Create a new conversation
+      tags:
+      - conversations
+securityDefinitions:
+  UserTokenAuth:
+    in: header
+    name: X-User-Token
+    type: apiKey
+swagger: "2.0"
