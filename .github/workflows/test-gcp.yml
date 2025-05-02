@@ -14,26 +14,25 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+      - name: GCP Auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
+          
       - name: Configure Docker for GCR
         run: |
-          gcloud auth configure-docker --quiet
-      - name: Docker login to GCR
-        uses: docker/login-action@v2
-        with:
-          registry: gcr.io
-          username: _json_key
-          password: ${{ secrets.GCP_SA_KEY }}
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
       - name: Print Project
         run: |
           gcloud config list project
       - name:  Build & Push to GCR
         run: |
           echo "Pushing to GCR"
-          IMAGE=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/my-docker-repo/server:${{ github.sha }}
+          IMAGE=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/my-docker-repo/server
           docker build -t $IMAGE .
           docker push $IMAGE
