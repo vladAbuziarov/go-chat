@@ -1,0 +1,15 @@
+name: Test GCP Auth
+
+on: ['push']
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to GCP
+        use: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Print Project
+        run: |
+          gcloud config list project

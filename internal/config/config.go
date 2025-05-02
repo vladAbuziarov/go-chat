@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/joho/godotenv"
+
 	"github.com/caarlos0/env"
 	"github.com/go-playground/validator/v10"
 )
@@ -18,10 +20,12 @@ type Config struct {
 	DBPassword string `env:"DB_PASSWORD" validate:"required"`
 	DBName     string `env:"DB_NAME" validate:"required"`
 	JWTSecret  string `env:"JWT_SECRET" validate:"required"`
-	JWTTTL	   string `env:"JWT_TOKEN_TTL" `
+	JWTTTL     string `env:"JWT_TOKEN_TTL" `
 }
 
 func LoadConfig() (*Config, error) {
+
+	_ = godotenv.Load()
 
 	cfg := &Config{}
 	err := env.Parse(cfg)
