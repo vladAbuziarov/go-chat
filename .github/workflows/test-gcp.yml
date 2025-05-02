@@ -13,3 +13,8 @@ jobs:
       - name: Print Project
         run: |
           gcloud config list project
+      - name: Push to GCR
+        run: |
+          echo "Pushing to GCR"
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/server:${{ github.sha }} .
+          docker push gcr.io/${{ secrets.GCP_PROJECT }}/server:${{ github.sha }}
