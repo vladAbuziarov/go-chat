@@ -63,7 +63,7 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*users.U
 
 	return user, nil
 }
-func (r *Repository) GetUserById(ctx context.Context, id int64) (*users.User, error) {
+func (r *Repository) GetUserById(ctx context.Context, id users.UserId) (*users.User, error) {
 	query := fmt.Sprintf("select * from %s where id = $1 limit 1", constants.UserTable)
 	user := &users.User{}
 	if err := r.db.GetContext(ctx, user, query, id); err != nil {

@@ -149,11 +149,10 @@ type ProfileResp200Body struct {
 // @Security     UserTokenAuth
 // @Router       /api/v1/auth/profile [get]
 func (h *Handler) GetProfile(ctx *fiber.Ctx) error {
-	u := auth.MustGetUser(ctx)
-
-	user, err := h.repos.UserRepository.GetUserById(ctx.Context(), u.ID)
+	userId := auth.MustGetUser(ctx)
+	user, err := h.repos.UserRepository.GetUserById(ctx.Context(), userId)
 	if err != nil {
-		h.logger.Error(ctx.Context(), fmt.Errorf("user fetch error: %w", err), slog.Int64("userId", u.ID))
+		h.logger.Error(ctx.Context(), fmt.Errorf("user fetch error: %w", err), slog.Int64("userId", int64(userId)))
 		return fiber.ErrInternalServerError
 	}
 	if user == nil {

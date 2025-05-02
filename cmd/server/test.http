@@ -18,14 +18,14 @@ Content-Type: application/json
 ###
 GET http://localhost:9001/api/v1/profile HTTP/1.1
 Content-Type: application/json
-X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM5Mzg1NDkyLCJpYXQiOjE3MzkzNjc0OTJ9.Y81cingTYBepBpiABuCBn_5P251oM-3T1fiNCamR8as
 
 {}
 
 ###
 POST http://localhost:9001/api/v1/conversations HTTP/1.1
 Content-Type: application/json
-X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM5Mzg1NDkyLCJpYXQiOjE3MzkzNjc0OTJ9.Y81cingTYBepBpiABuCBn_5P251oM-3T1fiNCamR8as
 
 {
     "name": "Group chat 321",
@@ -36,7 +36,7 @@ X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0M
 ###
 POST http://localhost:9001/api/v1/conversations/1/messages HTTP/1.1
 Content-Type: application/json
-X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM5Mzg1NDkyLCJpYXQiOjE3MzkzNjc0OTJ9.Y81cingTYBepBpiABuCBn_5P251oM-3T1fiNCamR8as
 
 {
     "content": "Hello, everyone1!"
@@ -59,4 +59,4 @@ X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0M
 ###
 GET http://localhost:9001/api/v1/conversations/1/messages?limit=1&lastID=2 HTTP/1.1
 Content-Type: application/json
-X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM0MDI4MTQ0LCJpYXQiOjE3MzQwMTAxNDR9.bCgIXlt5k6q7Ae-UXoi3cTT-ARXaylXMFO9UMO0PBes
+X-User-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzM5Mzg1NDkyLCJpYXQiOjE3MzkzNjc0OTJ9.Y81cingTYBepBpiABuCBn_5P251oM-3T1fiNCamR8as

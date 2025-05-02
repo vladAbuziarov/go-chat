@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"chatapp/internal/entities/users"
 	"chatapp/internal/logger"
 	"chatapp/internal/repositories"
 	"context"
@@ -12,6 +13,8 @@ import (
 var (
 	ErrConversationNotFound         = errors.New("conversation not found")
 	ErrIsNotConversationParticipant = errors.New("user is not conversation participant")
+	ErrFailedToCheckConversation    = errors.New("failed to check conversation")
+	ErrFailedToCheckParticipant     = errors.New("faild to check participant")
 )
 
 type AccessChecker struct {
@@ -26,11 +29,11 @@ func NewAccesChecker(logger logger.Logger, repos *repositories.Repositories) *Ac
 	}
 }
 
-func (a *AccessChecker) CanAccessConversation(ctx context.Context, cnvId, usrId int64) error {
+func (a *AccessChecker) CanAccessConversation(ctx context.Context, cnvId int64, usrId users.UserId) error {
 	cnvExists, err := a.repos.ConversationRepository.IsConversationExists(ctx, cnvId)
 	if err != nil {
 		a.logger.Error(ctx, fmt.Errorf("failed to check conversation by id: %w", err), slog.Int64("id", cnvId))
-		return fmt.Errorf("fail to check coversation: %w", err)
+		return errors.Join(ErrFailedToCheckConversation, err)
 	}
 	if !cnvExists {
 		return ErrConversationNotFound
@@ -38,8 +41,8 @@ func (a *AccessChecker) CanAccessConversation(ctx context.Context, cnvId, usrId 
 
 	isParticipant, err := a.repos.ConversationRepository.IsParticipant(ctx, cnvId, usrId)
 	if err != nil {
-		a.logger.Error(ctx, fmt.Errorf("failed check participant: %w", err), slog.Int64("id", cnvId), slog.Int64("userId", usrId))
-		return fmt.Errorf("faild to check participant: %w", err)
+		a.logger.Error(ctx, fmt.Errorf("failed check participant: %w", err), slog.Int64("id", cnvId), slog.Int64("userId", int64(usrId)))
+		return errors.Join(ErrFailedToCheckParticipant, err)
 	}
 	if !isParticipant {
 		return ErrIsNotConversationParticipant

@@ -3,43 +3,61 @@ package conversation
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"chatapp/internal/constants"
 	chatEnts "chatapp/internal/entities/chat"
+	"chatapp/internal/entities/users"
+	"chatapp/internal/logger"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type Repository struct {
-	db *sqlx.DB
+	db     *sqlx.DB
+	logger logger.Logger
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(db *sqlx.DB, logger logger.Logger) *Repository {
 	return &Repository{
-		db: db,
+		db:     db,
+		logger: logger,
 	}
 }
 
-func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, cnv *chatEnts.Conversation) error {
+func (r *Repository) Create(ctx context.Context, cnv *chatEnts.Conversation, pts []users.UserId) error {
+	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted,
+		ReadOnly:  false,
+	})
+	if err != nil {
+		return fmt.Errorf("failed begin transaction: %w", err)
+	}
+	defer func() {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil && errors.Is(rollbackErr, sql.ErrTxDone) {
+			r.logger.Error(ctx, fmt.Errorf("failed to rollback transaction: %w", rollbackErr))
+		}
+	}()
+
 	query := fmt.Sprintf(`
 	INSERT INTO %s (name, is_group, created_at, updated_at)
 	VALUES ($1, $2, NOW(), NOW())
 	RETURNING id`, constants.ConversationTable)
+	err = tx.GetContext(ctx, &cnv.ID, query, cnv.Name, cnv.IsGroup)
 
-	return tx.GetContext(ctx, &cnv.ID, query, cnv.Name, cnv.IsGroup)
-}
+	for _, p := range pts {
+		pQuery := fmt.Sprintf(`
+		INSERT INTO %s (conversation_id, user_id, joined_at)
+		VALUES ($1, $2, NOW())`, constants.ConversationParticipantTable)
 
-func (r *Repository) AddParticipant(ctx context.Context, tx *sqlx.Tx, cnvId, usrId int64) error {
-	query := fmt.Sprintf(`
-	INSERT INTO %s (conversation_id, user_id, joined_at)
-	VALUES ($1, $2, NOW())`, constants.ConversationParticipantTable)
+		_, err = tx.ExecContext(ctx, pQuery, cnv.ID, p)
+	}
 
-	_, err := tx.ExecContext(ctx, query, cnvId, usrId)
 	return err
 }
 
-func (r *Repository) IsParticipant(ctx context.Context, cnvId, usrId int64) (bool, error) {
+func (r *Repository) IsParticipant(ctx context.Context, cnvId int64, usrId users.UserId) (bool, error) {
 	var exists bool
 	query := fmt.Sprintf(`
 	SELECT EXISTS(

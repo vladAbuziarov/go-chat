@@ -4,6 +4,7 @@ import (
 	"chatapp/cmd/server/middlewares/auth"
 	reqparser "chatapp/cmd/server/utils/req_parser"
 	chat "chatapp/internal/entities/chat"
+	"chatapp/internal/entities/users"
 	eventlisteners "chatapp/internal/eventListeners"
 	"chatapp/internal/logger"
 	"chatapp/internal/services"
@@ -45,8 +46,9 @@ type CreateConversationRequestPayload struct {
 	IsGroup bool `json:"is_group" validate:"required,boolean"`
 	// IDs of participants to be added to the conversation
 	// required: true
-	ParticipantIDs []int64 `json:"participant_ids" validate:"required"`
+	ParticipantIDs []users.UserId `json:"participant_ids" validate:"required"`
 }
+
 // CreateConversationResponse200Payload represents a successful response containing the created conversation.
 // swagger:model
 type CreateConversationResponse200Payload struct {
@@ -60,17 +62,17 @@ type CreateConversationResponse200Payload struct {
 // @Produce      json
 // @Param        payload  body      CreateConversationRequestPayload  true  "Create Conversation Request"
 // @Success      200      {object}  CreateConversationResponse200Payload
-// @Router       /conversations [post]
+// @Router       /api/v1/conversations [post]
 // @Security UserTokenAuth
 func (h *Handler) CreateConversation(ctx *fiber.Ctx) error {
 	reqBody := &CreateConversationRequestPayload{}
 	if err := reqparser.ParseReqBody(ctx, reqBody); err != nil {
 		return errors.Join(fiber.ErrBadRequest, err)
 	}
-	u := auth.MustGetUser(ctx)
+	userId := auth.MustGetUser(ctx)
 
-	if !slices.Contains(reqBody.ParticipantIDs, u.ID) {
-		reqBody.ParticipantIDs = append(reqBody.ParticipantIDs, u.ID)
+	if !slices.Contains(reqBody.ParticipantIDs, userId) {
+		reqBody.ParticipantIDs = append(reqBody.ParticipantIDs, userId)
 	}
 
 	conv, err := h.srvs.ConversationService.CreateConversation(ctx.Context(), reqBody.Name, reqBody.IsGroup, reqBody.ParticipantIDs)
@@ -86,6 +88,8 @@ func (h *Handler) CreateConversation(ctx *fiber.Ctx) error {
 // listen ws with conversation messages
 func (h *Handler) ListenConversation(conn *websocket.Conn) {
 	ctx, cancel := context.WithCancel(context.Background())
+	h.logger.Info(ctx, "test qweqwe")
+
 	defer cancel()
 	defer conn.Close()
 
@@ -124,7 +128,7 @@ func (h *Handler) ListenConversation(conn *websocket.Conn) {
 // swagger:model
 type ShowUserTypingResponse200Payload struct {
 	// Indicates whether the operation was successful.
-    // required: true
+	// required: true
 	Success bool `json:"success"`
 }
 
@@ -137,14 +141,14 @@ type ShowUserTypingResponse200Payload struct {
 // @Security     UserTokenAuth
 // @Router       /api/v1/conversations/{conversationId}/show-user-typing [post]
 func (h *Handler) ShowUserTyping(ctx *fiber.Ctx) error {
-	user := auth.MustGetUser(ctx)
+	userId := auth.MustGetUser(ctx)
 
 	cnvId, err := strconv.ParseInt(ctx.Params("conversationId"), 10, 64)
 	if err != nil {
 		h.logger.Error(ctx.Context(), fmt.Errorf("failed to parse query params: %w", err), slog.Any("params", ctx.AllParams()))
 		return fiber.ErrBadRequest
 	}
-	if err := h.srvs.ConversationService.PostUserTyping(ctx.Context(), user.ID, cnvId); err != nil {
+	if err := h.srvs.ConversationService.PostUserTyping(ctx.Context(), userId, cnvId); err != nil {
 		if errors.Is(err, utils.ErrIsNotConversationParticipant) || errors.Is(err, utils.ErrConversationNotFound) {
 			return errors.Join(fiber.ErrBadRequest, err)
 		}

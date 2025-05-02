@@ -5,8 +5,9 @@ import (
 	"time"
 )
 
+type UserId int64
 type User struct {
-	ID        int64     `db:"id" json:"id"`
+	ID        UserId    `db:"id" json:"id"`
 	Username  string    `db:"user_name" json:"user_name"`
 	Email     string    `db:"email" json:"email"`
 	Password  string    `db:"password" json:"-"`

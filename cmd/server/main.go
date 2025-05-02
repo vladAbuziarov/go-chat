@@ -60,9 +60,9 @@ func main() {
 	}()
 
 	//init dependencies
-	rps := repositories.NewRepositories(cls)
+	rps := repositories.NewRepositories(cls, logger)
 	evls := eventlisteners.NewEventListeners()
-	srvs := services.NewServices(cfg, cls, logger, rps, evls)
+	srvs := services.NewServices(cfg, logger, rps, evls)
 	middlewares := middlewares.NewMiddlewares(srvs, rps, logger)
 	h := handlers.NewHandlers(srvs, middlewares, rps, evls, logger)
 

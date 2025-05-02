@@ -18,6 +18,7 @@ type Config struct {
 	DBPassword string `env:"DB_PASSWORD" validate:"required"`
 	DBName     string `env:"DB_NAME" validate:"required"`
 	JWTSecret  string `env:"JWT_SECRET" validate:"required"`
+	JWTTTL	   string `env:"JWT_TOKEN_TTL" `
 }
 
 func LoadConfig() (*Config, error) {

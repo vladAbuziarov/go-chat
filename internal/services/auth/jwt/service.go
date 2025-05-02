@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"chatapp/internal/config"
+	"chatapp/internal/entities/users"
 	"chatapp/internal/logger"
 	"context"
 	"fmt"
@@ -12,32 +13,32 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const tokenTTL = 5 * time.Hour
-
 type Service struct {
-	cfg    *config.Config
-	logger logger.Logger
+	cfg      *config.Config
+	logger   logger.Logger
+	tokenTTL time.Duration
 }
 
-func NewService(cfg *config.Config, logger logger.Logger) *Service {
+func NewService(tokenTTL time.Duration, cfg *config.Config, logger logger.Logger) *Service {
 	return &Service{
-		cfg:    cfg,
-		logger: logger,
+		cfg:      cfg,
+		logger:   logger,
+		tokenTTL: tokenTTL,
 	}
 }
 
-func (s *Service) CreateToken(ctx context.Context, userId int64) (string, error) {
+func (s *Service) CreateToken(ctx context.Context, userId users.UserId) (string, error) {
 	now := time.Now()
 	claims := jwt.RegisteredClaims{
-		Subject:   strconv.FormatInt(userId, 10),
+		Subject:   strconv.FormatInt(int64(userId), 10),
 		IssuedAt:  jwt.NewNumericDate(now),
-		ExpiresAt: jwt.NewNumericDate(now.Add(tokenTTL)),
+		ExpiresAt: jwt.NewNumericDate(now.Add(s.tokenTTL)),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	signedToken, err := token.SignedString([]byte(s.cfg.JWTSecret))
 	if err != nil {
-		s.logger.Error(ctx, fmt.Errorf("failed to sign token: %w", err), slog.Int64("userId", userId))
+		s.logger.Error(ctx, fmt.Errorf("failed to sign token: %w", err), slog.Int64("userId", int64(userId)))
 		return "", fmt.Errorf("failed to sign token: %w", err)
 	}
 	return signedToken, nil
