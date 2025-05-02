@@ -34,5 +34,6 @@ jobs:
       - name:  Build & Push to GCR
         run: |
           echo "Pushing to GCR"
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/server:${{ github.sha }} .
-          docker push gcr.io/${{ secrets.GCP_PROJECT }}/server:${{ github.sha }}
+          IMAGE=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/my-docker-repo/server:${{ github.sha }}
+          docker build -t $IMAGE .
+          docker push $IMAGE
