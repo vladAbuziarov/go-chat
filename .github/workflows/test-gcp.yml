@@ -33,6 +33,6 @@ jobs:
       - name:  Build & Push to GCR
         run: |
           echo "Pushing to GCR"
-          IMAGE=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/my-docker-repo/server
+          IMAGE=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/my-docker-repo/server:${{ github.sha }}
           docker build -t $IMAGE .
           docker push $IMAGE
