@@ -36,7 +36,6 @@ FROM base AS build
 COPY cmd/ cmd/
 COPY internal/ internal/
 COPY migrations/ migrations/
-COPY .env .env
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /tmp/server ./cmd/server/main.go
 
