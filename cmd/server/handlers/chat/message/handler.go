@@ -69,8 +69,8 @@ func (h *Handler) SendMessage(ctx *fiber.Ctx) error {
 		h.logger.Error(ctx.Context(), fmt.Errorf("failed to parse conversation id param: %w", err), slog.Any("params", ctx.Queries()))
 		return errors.Join(fiber.ErrBadRequest, err)
 	}
-	user := auth.MustGetUser(ctx)
-	message, err := h.srvs.MessageService.SendMessage(ctx.Context(), cnvId, user.ID, reqBody.Content)
+	userId := auth.MustGetUser(ctx)
+	message, err := h.srvs.MessageService.SendMessage(ctx.Context(), cnvId, userId, reqBody.Content)
 	if err != nil {
 		if errors.Is(err, utils.ErrIsNotConversationParticipant) || errors.Is(err, utils.ErrConversationNotFound) {
 			return errors.Join(fiber.ErrBadRequest, err)
@@ -104,7 +104,7 @@ type GetMessagesResponse200Payload struct {
 // @Security     UserTokenAuth
 // @Router       /api/v1/conversations/{conversationId}/messages [get]
 func (h *Handler) GetMessages(ctx *fiber.Ctx) error {
-	user := auth.MustGetUser(ctx)
+	userId := auth.MustGetUser(ctx)
 	cnvId, err := strconv.ParseInt(ctx.Params("conversationId"), 10, 64)
 	if err != nil {
 		h.logger.Error(ctx.Context(), fmt.Errorf("failed to parse query params: %w", err), slog.Any("params", ctx.Queries()))
@@ -129,7 +129,7 @@ func (h *Handler) GetMessages(ctx *fiber.Ctx) error {
 		ConvId:         cnvId,
 		Limit:          limit,
 		LastReceivedId: lastID,
-		UserId:         user.ID,
+		UserId:         userId,
 	}
 	messages, err := h.srvs.MessageService.GetMessages(ctx.Context(), params)
 	if err != nil {
@@ -173,7 +173,7 @@ type MessageUpdateResponse200Payload struct {
 // @Security     UserTokenAuth
 // @Router       /api/v1/conversations/{conversationId}/messages/{messageId} [post]
 func (h *Handler) UpdateMessage(ctx *fiber.Ctx) error {
-	user := auth.MustGetUser(ctx)
+	userId := auth.MustGetUser(ctx)
 	cnvId, err := strconv.ParseInt(ctx.Params("conversationId"), 10, 64)
 	if err != nil {
 		h.logger.Error(ctx.Context(), fmt.Errorf("failed to parse query params: %w", err), slog.String("fail_on", "conversationId"), slog.Any("params", ctx.Queries()))
@@ -188,7 +188,7 @@ func (h *Handler) UpdateMessage(ctx *fiber.Ctx) error {
 	if err := reqparser.ParseReqBody(ctx, reqBody); err != nil {
 		return errors.Join(fiber.ErrBadRequest, err)
 	}
-	message, err := h.srvs.MessageService.UpdateMessage(ctx.Context(), cnvId, msgId, user.ID, reqBody.Content)
+	message, err := h.srvs.MessageService.UpdateMessage(ctx.Context(), cnvId, msgId, userId, reqBody.Content)
 	if err != nil {
 		if errors.Is(err, utils.ErrIsNotConversationParticipant) || errors.Is(err, utils.ErrConversationNotFound) {
 			return errors.Join(fiber.ErrBadRequest, err)

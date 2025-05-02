@@ -37,7 +37,7 @@ func (rl *Middleware) getLimiter(key string) *rate.Limiter {
 }
 
 func (rl *Middleware) Handle(c *fiber.Ctx) error {
-	userID := auth.MustGetUser(c).ID
+	userID := auth.MustGetUser(c)
 	key := fmt.Sprintf("user-%d", userID)
 	limiter := rl.getLimiter(key)
 

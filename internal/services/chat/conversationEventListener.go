@@ -2,6 +2,7 @@ package chat
 
 import (
 	chatEnts "chatapp/internal/entities/chat"
+	"chatapp/internal/entities/users"
 	"chatapp/internal/services/events"
 	"sync"
 )
@@ -46,7 +47,7 @@ func (e *EventListener) UnsubscribeChannel(convId int64, l chan<- events.Event) 
 	delete(e.ecs, convId)
 }
 
-func (e *EventListener) PostUserTyping(cnvId, usrId int64) {
+func (e *EventListener) PostUserTyping(cnvId int64, usrId users.UserId) {
 	ch, ok := e.ecs[cnvId]
 	if !ok {
 		return

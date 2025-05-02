@@ -2,6 +2,7 @@ package events
 
 import (
 	chatEnts "chatapp/internal/entities/chat"
+	"chatapp/internal/entities/users"
 	"sync"
 	"sync/atomic"
 )
@@ -62,10 +63,10 @@ func (e *EventChannel) PostMessageUpdated(msg *chatEnts.Message) {
 	}
 }
 
-func (e *EventChannel) PostUserTyping(usrId int64) {
+func (e *EventChannel) PostUserTyping(usrId users.UserId) {
 	e.msgsCh <- Event{
 		Type: EventTypeUserTyping,
-		Data: map[string]int64{"user_id": usrId},
+		Data: map[string]users.UserId{"user_id": usrId},
 	}
 }
 

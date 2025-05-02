@@ -30,7 +30,8 @@ func NewMiddleware(srvs *services.Services, repos *repositories.Repositories, lo
 }
 
 const authHeaderName = "X-User-Token"
-const CtxKey = "user_id"
+
+type UserIdContextKey struct{}
 
 func (m *Middleware) Handle(ctx *fiber.Ctx) error {
 	token := ctx.Get(authHeaderName)
@@ -41,8 +42,7 @@ func (m *Middleware) Handle(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.ErrUnauthorized
 	}
-
-	user, err := m.repos.UserRepository.GetUserById(ctx.Context(), *userId)
+	user, err := m.repos.UserRepository.GetUserById(ctx.Context(), users.UserId(*userId))
 	if err != nil {
 		return fmt.Errorf("failed to get user by id: %w", err)
 	}
@@ -50,20 +50,20 @@ func (m *Middleware) Handle(ctx *fiber.Ctx) error {
 	if user == nil {
 		return fiber.ErrNotFound
 	}
-	ctx.Locals(CtxKey, user)
-	fu.SetLoggerAttrs(ctx, slog.Int64(CtxKey, *userId))
+	ctx.Locals(UserIdContextKey{}, user.ID)
+	fu.SetLoggerAttrs(ctx, slog.Int64("user_id", *userId))
 	return ctx.Next()
 }
 
-func mustBeUser(v any) *users.User {
-	if u, ok := v.(*users.User); ok {
+func mustBeUser(v any) users.UserId {
+	if u, ok := v.(users.UserId); ok {
 		return u
 	}
 
 	panic(ErrUserIdExpected)
 }
 
-func MustGetUser(ctx *fiber.Ctx) *users.User {
-	val := ctx.Locals(CtxKey)
+func MustGetUser(ctx *fiber.Ctx) users.UserId {
+	val := ctx.Locals(UserIdContextKey{}).(users.UserId)
 	return mustBeUser(val)
 }

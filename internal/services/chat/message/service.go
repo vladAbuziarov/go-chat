@@ -3,9 +3,10 @@ package message
 import (
 	messages_dto "chatapp/internal/dto/messages"
 	chatEnts "chatapp/internal/entities/chat"
+	"chatapp/internal/entities/users"
+	eventlisteners "chatapp/internal/eventListeners"
 	"chatapp/internal/logger"
 	"chatapp/internal/repositories"
-	chat_events "chatapp/internal/services/chat"
 	"chatapp/internal/services/chat/utils"
 	"context"
 	"database/sql"
@@ -23,20 +24,20 @@ type Service struct {
 	aCh    *utils.AccessChecker
 	logger logger.Logger
 
-	evl *chat_events.EventListener
+	evls *eventlisteners.EventListeners
 }
 
-func NewService(logger logger.Logger, repos *repositories.Repositories, evl *chat_events.EventListener) *Service {
+func NewService(logger logger.Logger, repos *repositories.Repositories, evls *eventlisteners.EventListeners) *Service {
 	return &Service{
 		repos:  repos,
 		aCh:    utils.NewAccesChecker(logger, repos),
 		logger: logger,
 
-		evl: evl,
+		evls: evls,
 	}
 }
 
-func (s *Service) SendMessage(ctx context.Context, cnvId, sederId int64, content string) (*chatEnts.Message, error) {
+func (s *Service) SendMessage(ctx context.Context, cnvId int64, sederId users.UserId, content string) (*chatEnts.Message, error) {
 	if err := s.aCh.CanAccessConversation(ctx, cnvId, sederId); err != nil {
 		s.logger.Error(ctx, fmt.Errorf("failed create message: %w", err), slog.Int64("id", cnvId))
 		return nil, err
@@ -51,12 +52,12 @@ func (s *Service) SendMessage(ctx context.Context, cnvId, sederId int64, content
 		s.logger.Error(ctx, fmt.Errorf("failed create message: %w", err), slog.Any("message", message))
 		return nil, fmt.Errorf("failed create message: %w", err)
 	}
-	s.evl.PostMessageCreated(message)
+	s.evls.ChatEventListener.PostMessageCreated(message)
 	s.logger.Info(ctx, "message created", slog.Any("message", message))
 	return message, nil
 }
 
-func (s *Service) UpdateMessage(ctx context.Context, cnvId, msgId, usrId int64, content string) (*chatEnts.Message, error) {
+func (s *Service) UpdateMessage(ctx context.Context, cnvId, msgId int64, usrId users.UserId, content string) (*chatEnts.Message, error) {
 	if err := s.aCh.CanAccessConversation(ctx, cnvId, usrId); err != nil {
 		s.logger.Error(ctx, fmt.Errorf("failed update message: %w", err), slog.Int64("id", cnvId))
 		return nil, err
@@ -77,7 +78,7 @@ func (s *Service) UpdateMessage(ctx context.Context, cnvId, msgId, usrId int64, 
 		return nil, fmt.Errorf("failed to update message: %w", err)
 	}
 
-	s.evl.PostMessageUpdated(message)
+	s.evls.ChatEventListener.PostMessageUpdated(message)
 	s.logger.Info(ctx, "message updated", slog.Any("message", message))
 	return message, nil
 }
