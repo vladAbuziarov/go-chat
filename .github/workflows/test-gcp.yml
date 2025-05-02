@@ -1,11 +1,19 @@
 name: Test GCP Auth
 
-on: ['push']
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   echo:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
@@ -13,7 +21,7 @@ jobs:
       - name: Print Project
         run: |
           gcloud config list project
-      - name: Push to GCR
+      - name:  Build & Push to GCR
         run: |
           echo "Pushing to GCR"
           docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/server:${{ github.sha }} .
