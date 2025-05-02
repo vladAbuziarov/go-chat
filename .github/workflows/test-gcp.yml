@@ -13,11 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v1
+        uses: actions/checkout@v3
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+      - name: Configure Docker for GCR
+        run: |
+          gcloud auth configure-docker --quiet
       - name: Print Project
         run: |
           gcloud config list project
